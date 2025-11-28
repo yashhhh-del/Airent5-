@@ -1,7 +1,6 @@
 """
-🏠 AI Property Management & Description Generator
-Combined Property Management System + AI Description Generator
-Premium Quality with Groq Free API + Property Type Guide
+AI Property Description Generator - WITH REGENERATE FEATURE
+Premium Quality with Groq Free API
 """
 
 import streamlit as st
@@ -14,95 +13,11 @@ import time
 
 # Page Configuration
 st.set_page_config(
-    page_title="AI Property Management System",
+    page_title="AI Property Description Generator",
     page_icon="🏠",
     layout="wide"
 )
 
-# ==================== PROPERTY TYPE GUIDE ====================
-class PropertyTypeGuide:
-    """Property Type Information System"""
-    
-    def __init__(self):
-        self.property_types = {
-            "Agricultural": {
-                "description": "Kheti ki zameen - Fasal ugane ke liye",
-                "features": ["Farming activities", "Usually shahar se bahar", "Irrigation facilities", "Crop cultivation"],
-                "documents": ["7/12 Extract", "Ferfar", "Property Card", "NOC"],
-                "restrictions": ["Construction usually not allowed", "Conversion required for building"]
-            },
-            "Residential": {
-                "description": "Ghar/makaan banane ke liye",
-                "features": ["NA approved", "Colony/Society mein", "Basic amenities", "Residential construction allowed"],
-                "documents": ["Sale Deed", "Property Card", "NA Order", "Building Plan Approval"],
-                "restrictions": ["Only residential construction", "Height restrictions apply"]
-            },
-            "Commercial": {
-                "description": "Dukaan, office, showroom ke liye",
-                "features": ["Business activities allowed", "Main road location", "High footfall areas", "Parking facility"],
-                "documents": ["Sale Deed", "Trade License", "Shop Act License", "Fire NOC"],
-                "restrictions": ["Business hours regulations", "Specific business types allowed"]
-            },
-            "Industrial": {
-                "description": "Factory, warehouse, manufacturing ke liye",
-                "features": ["Large area", "Industrial zone", "Heavy machinery allowed", "Loading facilities"],
-                "documents": ["Sale Deed", "Industrial License", "Pollution Clearance", "Factory License"],
-                "restrictions": ["Environmental clearance required", "Specific industry zones"]
-            },
-            "Institutional": {
-                "description": "School, hospital, college ke liye",
-                "features": ["Public use", "Educational/Medical facilities", "Large open spaces", "Accessibility"],
-                "documents": ["Sale Deed", "Trust/Society Registration", "NOC from authorities", "Building approval"],
-                "restrictions": ["Only institutional use", "Strict regulations"]
-            },
-            "Mixed-Use": {
-                "description": "Residential + Commercial dono allowed",
-                "features": ["Flexible usage", "Niche shop, upar ghar", "Dual income potential", "Urban areas"],
-                "documents": ["Sale Deed", "Mixed-Use Permission", "Building Plan", "Trade License"],
-                "restrictions": ["Proportion restrictions", "Separate entries required"]
-            }
-        }
-    
-    def display_guide(self):
-        """Display property type guide in Streamlit"""
-        st.header("🏘️ Property Type Guide")
-        st.caption("Comprehensive information about different property types")
-        
-        # Property type selection
-        selected_type = st.selectbox(
-            "Select Property Type",
-            list(self.property_types.keys()),
-            key="property_guide_select"
-        )
-        
-        if selected_type:
-            prop_data = self.property_types[selected_type]
-            
-            # Display property information
-            col1, col2 = st.columns([1, 1])
-            
-            with col1:
-                st.subheader(f"📖 {selected_type} Property")
-                st.info(f"**Description:** {prop_data['description']}")
-                
-                st.markdown("#### ✅ Key Features")
-                for feature in prop_data["features"]:
-                    st.markdown(f"✓ {feature}")
-                
-                st.markdown("#### 📄 Required Documents")
-                for doc in prop_data["documents"]:
-                    st.markdown(f"📄 {doc}")
-            
-            with col2:
-                st.markdown("#### ⚠️ Restrictions & Regulations")
-                for restriction in prop_data["restrictions"]:
-                    st.markdown(f"⚠️ {restriction}")
-                
-                # Quick stats
-                st.markdown("#### 📊 Quick Info")
-                st.metric("Features Count", len(prop_data["features"]))
-                st.metric("Documents Required", len(prop_data["documents"]))
-                st.metric("Key Restrictions", len(prop_data["restrictions"]))
 
 # ==================== INTERACTIVE PARSER ====================
 class InteractiveParser:
@@ -180,6 +95,7 @@ class InteractiveParser:
         
         return properties
 
+
 # ==================== AI GENERATION ====================
 def test_groq_api(api_key):
     """Test Groq API connection with simple request"""
@@ -205,6 +121,7 @@ def test_groq_api(api_key):
             return False, f"Error {response.status_code}: {response.text[:200]}"
     except Exception as e:
         return False, f"Connection Error: {str(e)}"
+
 
 def generate_with_groq(property_data, api_key, retry_count=3, variation_seed=0):
     """Generate PREMIUM description using Groq API with variation support"""
@@ -268,7 +185,7 @@ def generate_with_groq(property_data, api_key, retry_count=3, variation_seed=0):
             water_supply = ', '.join(property_data.get('water_supply', []))
             water_availability = property_data.get('water_availability', '')
             
-            # Include rough_description in prompt
+            # ============ FIX: Include rough_description in prompt ============
             rough_desc = property_data.get('rough_description', '').strip()
             rough_desc_section = ""
             if rough_desc:
@@ -460,6 +377,7 @@ Return ONLY valid JSON (no markdown, no ```json):
     
     return None
 
+
 def generate_fallback(property_data):
     """Fallback template-based generation"""
     bhk = property_data['bhk']
@@ -498,6 +416,7 @@ def generate_fallback(property_data):
         "meta_description": f"Rent this spacious {bhk} BHK {prop_type} in {locality}, {city}. {area} sqft, {furnishing} furnished. ₹{rent:,}/month. Available now!"
     }
 
+
 def generate_description(property_data, api_provider, api_key=None, variation_seed=0):
     """Main generation function with multiple providers and variation support"""
     if api_provider == "Groq Premium (Free)" and api_key:
@@ -509,10 +428,125 @@ def generate_description(property_data, api_provider, api_key=None, variation_se
     st.info("ℹ️ Using template-based generation")
     return generate_fallback(property_data)
 
+
+def generate_enhanced_description(original_desc, property_data, style, length, api_key):
+    """Generate an enhanced version of the description using AI"""
+    
+    # Map length selection to word count
+    length_map = {
+        "Medium (200-250 words)": "200-250 words",
+        "Long (300-350 words)": "300-350 words", 
+        "Extra Long (400-500 words)": "400-500 words"
+    }
+    target_length = length_map.get(length, "250-300 words")
+    
+    # Map style to instructions
+    style_instructions = {
+        "More Detailed & Elaborate": "Add more specific details about each feature, room descriptions, and practical benefits. Include sensory details about spaces, lighting, and ambiance.",
+        "More Emotional & Persuasive": "Use emotional triggers, create vivid lifestyle imagery, add aspirational language. Make the reader feel excited and create urgency.",
+        "More Professional & Formal": "Use sophisticated vocabulary, focus on specifications and value proposition. Suitable for corporate tenants and professionals.",
+        "Add Local Flavor & Culture": "Include references to local culture, nearby famous spots, local food scenes, and neighborhood character. Make it feel authentic to the location.",
+        "Focus on Investment Value": "Emphasize rental yield potential, appreciation prospects, location growth, infrastructure development, and smart financial decision aspects.",
+        "Luxury & Premium Feel": "Use upscale vocabulary, emphasize exclusivity, premium finishes, and sophisticated lifestyle. Make it feel like a luxury listing."
+    }
+    style_guide = style_instructions.get(style, "Make it more detailed and engaging.")
+    
+    # Build location string
+    location = f"{property_data['locality']}, {property_data['city']}"
+    if property_data.get('district'):
+        location += f", {property_data['district']}"
+    
+    prompt = f"""You are an expert real estate copywriter. Enhance the following property description.
+
+**ORIGINAL DESCRIPTION:**
+{original_desc}
+
+**PROPERTY QUICK INFO:**
+- {property_data['bhk']} BHK {property_data['property_type'].title()}
+- Location: {location}
+- Area: {property_data['area_sqft']} sq ft
+- Rent: ₹{property_data['rent_amount']:,}/month
+- Furnishing: {property_data['furnishing_status']}
+- Amenities: {', '.join(property_data.get('amenities', []))}
+
+**ENHANCEMENT STYLE:** {style}
+**STYLE INSTRUCTIONS:** {style_guide}
+
+**TARGET LENGTH:** {target_length}
+
+**REQUIREMENTS:**
+1. Keep all factual information accurate
+2. Maintain the core message but enhance the presentation
+3. Add more vivid descriptions and emotional appeal
+4. Include specific benefits for the target tenant
+5. Create a stronger call-to-action
+6. Make it unique and memorable
+7. Follow the style instructions closely
+
+**IMPORTANT:** 
+- Return ONLY the enhanced description text
+- Do NOT include any headers, labels, or formatting
+- Do NOT start with "Here is" or similar phrases
+- Just write the enhanced property description directly
+"""
+
+    try:
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key.strip()}"
+            },
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": f"You are an expert real estate copywriter specializing in {style.lower()}. Enhance property descriptions to be more compelling while keeping facts accurate. Return only the enhanced description text, nothing else."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                "temperature": 0.8,
+                "max_tokens": 1500,
+                "top_p": 0.9
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            enhanced = result['choices'][0]['message']['content'].strip()
+            
+            # Clean up any unwanted prefixes
+            unwanted_prefixes = [
+                "Here is the enhanced description:",
+                "Here's the enhanced version:",
+                "Enhanced description:",
+                "Enhanced version:",
+                "Here is",
+                "Here's"
+            ]
+            for prefix in unwanted_prefixes:
+                if enhanced.lower().startswith(prefix.lower()):
+                    enhanced = enhanced[len(prefix):].strip()
+            
+            return enhanced
+        else:
+            st.error(f"❌ API Error: {response.status_code}")
+            return None
+            
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
+        return None
+
+
 # ==================== MAIN APP ====================
 def main():
-    st.title("🏠 AI Property Management System")
-    st.caption("Property Type Guide + Premium Description Generator - FREE with Groq API 🌟")
+    st.title("🏠 AI Property Description Generator")
+    st.caption("Premium Quality Descriptions - FREE with Groq API 🌟 | Now with Regenerate Feature")
     
     # Initialize session state
     if 'generated_result' not in st.session_state:
@@ -521,41 +555,14 @@ def main():
         st.session_state.property_data = None
     if 'generation_count' not in st.session_state:
         st.session_state.generation_count = 0
+    if 'enhanced_description' not in st.session_state:
+        st.session_state.enhanced_description = None
+    if 'use_enhanced' not in st.session_state:
+        st.session_state.use_enhanced = False
+    if 'enhanced_edit_mode' not in st.session_state:
+        st.session_state.enhanced_edit_mode = False
     
-    # Create main tabs
-    tab1, tab2, tab3 = st.tabs(["🏘️ Property Type Guide", "🚀 Description Generator", "📊 Batch Processing"])
-    
-    with tab1:
-        # Property Type Guide
-        guide = PropertyTypeGuide()
-        guide.display_guide()
-    
-    with tab2:
-        # Single Property Description Generator
-        show_single_property_generator()
-    
-    with tab3:
-        # Batch Processing (placeholder for future enhancement)
-        st.header("📊 Batch Property Processing")
-        st.info("🚧 This feature is under development")
-        st.write("Upload multiple property listings to generate descriptions in bulk")
-        
-        uploaded_file = st.file_uploader(
-            "Upload CSV/Excel file with multiple properties",
-            type=['csv', 'xlsx'],
-            key="batch_upload"
-        )
-        
-        if uploaded_file:
-            st.success(f"✅ File uploaded: {uploaded_file.name}")
-            st.info("Batch processing coming soon!")
-
-def show_single_property_generator():
-    """Single Property Description Generator"""
-    st.header("🚀 AI Property Description Generator")
-    st.caption("Generate premium property descriptions with AI")
-    
-    # Sidebar configuration
+    # Sidebar
     with st.sidebar:
         st.header("⚙️ Configuration")
         
@@ -583,35 +590,242 @@ def show_single_property_generator():
                             st.success(message)
                         else:
                             st.error(message)
+            
+            st.info("💡 **Premium Features:** Enhanced prompting + Emotional copy + Lifestyle focus")
         
         st.divider()
         
         # Feature Info
-        with st.expander("ℹ️ About Features"):
+        with st.expander("ℹ️ About Regenerate Feature"):
             st.markdown("""
-            **✨ Premium Features:**
-            - Property Type Guide with detailed information
-            - AI-powered description generation
-            - Multiple creative variations
-            - SEO-optimized content
-            - Professional real estate copywriting
+            **🔄 Regenerate Feature:**
+            - Generate multiple versions for same property
+            - Each version has unique creative angle
+            - 5 different styles:
+              1. 🌟 Lifestyle & Experience
+              2. 💰 Investment & Value
+              3. 📍 Location & Connectivity
+              4. ✨ Comfort & Luxury
+              5. 👨‍👩‍👧 Community & Safety
+            - No need to re-enter details
+            - Pick the best version!
+            """)
+        
+        with st.expander("✨ About Enhanced Description"):
+            st.markdown("""
+            **🚀 Enhanced Description Feature:**
+            
+            After generating, you can create an **enhanced version** with:
+            
+            **Enhancement Styles:**
+            - 📝 More Detailed & Elaborate
+            - 💖 More Emotional & Persuasive
+            - 👔 More Professional & Formal
+            - 🏛️ Add Local Flavor & Culture
+            - 💰 Focus on Investment Value
+            - 👑 Luxury & Premium Feel
+            
+            **Target Lengths:**
+            - Medium: 200-250 words
+            - Long: 300-350 words
+            - Extra Long: 400-500 words
+            
+            **How to use:**
+            1. Generate initial description
+            2. Go to "AI Enhanced Version" tab
+            3. Select style & length
+            4. Click "Generate Enhanced Version"
+            5. Compare with original
+            6. Click "Use This Version" to use in downloads
             """)
     
-    # Property input form
-    st.subheader("📝 Property Details")
+    show_single_property(api_provider, api_key)
+
+
+def show_single_property(api_provider, api_key):
+    """Comprehensive Property Input Module with Regenerate"""
+    st.subheader("📝 Property Details Entry Form")
+    st.caption("Fill in all details to generate premium property description")
     
-    # Create tabs for organized input
+    # Add radio button for input mode selection
+    input_mode = st.radio(
+        "Select Input Mode:",
+        ["🏠 Basic Details", "📋 Property Details"],
+        horizontal=True,
+        key="input_mode_radio"
+    )
+    
+    if input_mode == "🏠 Basic Details":
+        show_basic_details_form(api_provider, api_key)
+    else:
+        show_property_details_form(api_provider, api_key)
+
+
+def show_basic_details_form(api_provider, api_key):
+    """Show simplified basic details form"""
+    st.info("🔍 **Basic Details Mode**: Quick and simple property information entry")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        property_type = st.selectbox(
+            "Property Type *",
+            ["Flat", "Villa", "Independent House", "PG/Hostel", "Shop", "Office Space", 
+             "Warehouse", "Land/Plot", "Studio Apartment", "Penthouse", "Plot", "Agricultural Land", 
+             "Residential", "Commercial", "Industrial", "Institutional"],
+            help="Select the type of property",
+            key="basic_prop_type"
+        )
+        
+        bhk = st.selectbox(
+            "BHK Configuration / Rooms *",
+            ["1 RK", "1 BHK", "2 BHK", "3 BHK", "4 BHK", "5 BHK", "5+ BHK", 
+             "Studio", "Other"],
+            help="Number of bedrooms, hall, and kitchen",
+            key="basic_bhk"
+        )
+        
+        area_unit = st.radio("Area Unit", ["sq ft", "sq m"], horizontal=True, key="basic_area_unit")
+        area_sqft = st.number_input(
+            f"Built-up Area ({area_unit}) *",
+            min_value=100,
+            max_value=50000,
+            value=1000,
+            step=200,
+            help="Total built-up area of the property",
+            key="basic_area"
+        )
+        
+        furnishing = st.selectbox(
+            "Furnishing Status *",
+            ["Unfurnished", "Semi-Furnished", "Fully Furnished"],
+            help="Current furnishing level of the property",
+            key="basic_furnishing"
+        )
+    
+    with col2:
+        # Location Details
+        state = st.selectbox(
+            "State *",
+            ["Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Telangana", "Gujarat", 
+             "Uttar Pradesh", "West Bengal", "Rajasthan", "Madhya Pradesh", "Kerala",
+             "Punjab", "Haryana", "Bihar", "Odisha", "Andhra Pradesh", "Jharkhand",
+             "Assam", "Chhattisgarh", "Uttarakhand", "Himachal Pradesh", "Goa", "Other"],
+            help="State where property is located",
+            key="basic_state"
+        )
+        
+        city = st.text_input(
+            "City/Town *",
+            value="Mumbai",
+            help="City or town name",
+            key="basic_city"
+        )
+        
+        locality = st.text_input(
+            "Area/Locality *",
+            value="Andheri West",
+            help="Specific area or locality name",
+            key="basic_locality"
+        )
+        
+        landmark = st.text_input(
+            "Landmark (Optional)",
+            placeholder="e.g., Near XYZ Mall, Opposite ABC Hospital",
+            help="Prominent landmark near the property",
+            key="basic_landmark"
+        )
+    
+    # Pricing Details
+    st.markdown("### 💰 Pricing & Availability")
+    col_price1, col_price2 = st.columns(2)
+    
+    with col_price1:
+        rent = st.number_input(
+            "Monthly Rent (₹) *",
+            min_value=1000,
+            max_value=10000000000,
+            value=30000,
+            step=5000,
+            help="Monthly rental amount",
+            key="basic_rent"
+        )
+        
+        deposit = st.number_input(
+            "Security Deposit (₹) *",
+            min_value=0,
+            max_value=50000000,
+            value=50000,
+            step=5000,
+            help="Refundable security deposit",
+            key="basic_deposit"
+        )
+    
+    with col_price2:
+        available = st.date_input(
+            "Available From *",
+            help="Date when property will be available for move-in",
+            key="basic_available"
+        )
+        
+        preferred_tenants = st.multiselect(
+            "Preferred Tenants *",
+            ["Family", "Bachelors", "Students", "Company Lease", "Any"],
+            default=["Family"],
+            help="Type of tenants preferred (can select multiple)",
+            key="basic_tenants"
+        )
+    
+    # Additional Details
+    st.markdown("### 🏠 Additional Information")
+    rough_description = st.text_area(
+        "Property Description / Special Features",
+        placeholder="Describe your property...\n\nExamples:\n- Spacious living room with balcony\n- Modern kitchen with modular cabinets\n- Peaceful neighborhood\n- Close to schools and markets",
+        height=100,
+        help="Brief description of the property and its key features",
+        key="basic_rough_desc"
+    )
+    
+    # Prepare property data for basic form
+    property_data = {
+        'property_type': property_type.lower(),
+        'bhk': bhk,
+        'area_sqft': area_sqft,
+        'area_unit': area_unit,
+        'state': state,
+        'city': city,
+        'locality': locality,
+        'landmark': landmark if landmark else '',
+        'furnishing_status': furnishing.lower(),
+        'rent_amount': rent,
+        'deposit_amount': deposit,
+        'available_from': str(available),
+        'preferred_tenants': ', '.join(preferred_tenants),
+        'amenities': [],
+        'rough_description': rough_description if rough_description else ''
+    }
+    
+    # Generate button for basic form
+    handle_generation_ui(property_data, api_provider, api_key)
+
+
+def show_property_details_form(api_provider, api_key):
+    """Show comprehensive property details form (original detailed form)"""
+    st.info("📋 **Property Details Mode**: Comprehensive property information with all features")
+    
+    # Create tabs for detailed form
     tab1, tab2, tab3 = st.tabs(["🏠 Basic Details", "💰 Pricing & Availability", "✨ Features & Amenities"])
     
     with tab1:
+        st.markdown("### Basic Property Information")
+        
         col1, col2 = st.columns(2)
         
         with col1:
             property_type = st.selectbox(
                 "Property Type *",
                 ["Flat", "Villa", "Independent House", "PG/Hostel", "Shop", "Office Space", 
-                 "Warehouse", "Land/Plot", "Studio Apartment", "Penthouse", "Agricultural", 
-                 "Residential", "Commercial", "Industrial", "Institutional", "Mixed-Use"],
+                 "Warehouse", "Land/Plot", "Studio Apartment", "Penthouse" , "Plot" , "Agricultural Land" , " Residential " , " Commercial " , "Industrial " , " Institutional"],
                 help="Select the type of property",
                 key="prop_type_select"
             )
@@ -624,8 +838,9 @@ def show_single_property_generator():
                 key="bhk_select"
             )
             
+            area_unit = st.radio("Area Unit", ["sq ft", "sq m"], horizontal=True, key="area_unit_radio")
             area_sqft = st.number_input(
-                "Built-up Area (sq ft) *",
+                f"Built-up Area ({area_unit}) *",
                 min_value=100,
                 max_value=50000,
                 value=1000,
@@ -642,19 +857,50 @@ def show_single_property_generator():
             )
         
         with col2:
-            city = st.text_input(
-                "City/Town *",
-                value="Mumbai",
-                help="City or town name",
-                key="city_input"
+            # State Selection
+            state = st.selectbox(
+                "State *",
+                ["Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Telangana", "Gujarat", 
+                 "Uttar Pradesh", "West Bengal", "Rajasthan", "Madhya Pradesh", "Kerala",
+                 "Punjab", "Haryana", "Bihar", "Odisha", "Andhra Pradesh", "Jharkhand",
+                 "Assam", "Chhattisgarh", "Uttarakhand", "Himachal Pradesh", "Goa", "Other"],
+                help="State where property is located",
+                key="state_input"
             )
             
-            locality = st.text_input(
-                "Area/Locality *",
-                value="Andheri West",
-                help="Specific area or locality name",
-                key="locality_input"
-            )
+            col_loc1, col_loc2 = st.columns(2)
+            with col_loc1:
+                district = st.text_input(
+                    "District *",
+                    value="Mumbai Suburban",
+                    help="District name",
+                    key="district_input"
+                )
+            
+            with col_loc2:
+                city = st.text_input(
+                    "City/Town *",
+                    value="Mumbai",
+                    help="City or town name",
+                    key="city_input"
+                )
+            
+            col_loc3, col_loc4 = st.columns(2)
+            with col_loc3:
+                locality = st.text_input(
+                    "Area/Locality *",
+                    value="Andheri West",
+                    help="Specific area or locality name",
+                    key="locality_input"
+                )
+            
+            with col_loc4:
+                pincode = st.text_input(
+                    "Pincode",
+                    placeholder="e.g., 400053",
+                    help="6-digit PIN code",
+                    key="pincode_input"
+                )
             
             landmark = st.text_input(
                 "Landmark (Optional)",
@@ -685,6 +931,8 @@ def show_single_property_generator():
                 )
     
     with tab2:
+        st.markdown("### Pricing & Availability Details")
+        
         col1, col2 = st.columns(2)
         
         with col1:
@@ -707,6 +955,16 @@ def show_single_property_generator():
                 help="Refundable security deposit",
                 key="deposit_input"
             )
+            
+            maintenance = st.number_input(
+                "Maintenance (₹/month)",
+                min_value=0,
+                max_value=100000,
+                value=2000,
+                step=500,
+                help="Monthly maintenance charges (if applicable)",
+                key="maintenance_input"
+            )
         
         with col2:
             available = st.date_input(
@@ -722,11 +980,22 @@ def show_single_property_generator():
                 help="Type of tenants preferred (can select multiple)",
                 key="tenants_multiselect"
             )
+            
+            negotiable = st.checkbox("Rent Negotiable", value=False, key="negotiable_check")
+            parking_charges = st.number_input(
+                "Parking Charges (₹/month)",
+                min_value=0,
+                max_value=10000,
+                value=0,
+                help="Additional parking charges if any",
+                key="parking_input"
+            )
     
     with tab3:
-        st.markdown("#### 🏢 Features & Amenities")
+        st.markdown("### Features & Amenities")
         
-        col1, col2, col3 = st.columns(3)
+        st.markdown("#### 🏢 Building Amenities")
+        col1, col2, col3, col4 = st.columns(4)
         
         amenities = []
         
@@ -737,22 +1006,86 @@ def show_single_property_generator():
                 amenities.append("Parking")
             if st.checkbox("Power Backup", value=False, key="amenity_power"):
                 amenities.append("Power Backup")
-            if st.checkbox("Security", value=True, key="amenity_security"):
-                amenities.append("Security")
         
         with col2:
+            if st.checkbox("Security", value=True, key="amenity_security"):
+                amenities.append("Security")
+            if st.checkbox("CCTV Surveillance", value=False, key="amenity_cctv"):
+                amenities.append("CCTV")
+            if st.checkbox("Intercom", value=False, key="amenity_intercom"):
+                amenities.append("Intercom")
+            if st.checkbox("Fire Safety", value=False, key="amenity_fire"):
+                amenities.append("Fire Safety")
+        
+        with col3:
             if st.checkbox("Gym/Fitness Center", value=False, key="amenity_gym"):
                 amenities.append("Gym")
             if st.checkbox("Swimming Pool", value=False, key="amenity_pool"):
                 amenities.append("Pool")
             if st.checkbox("Garden/Park", value=False, key="amenity_garden"):
                 amenities.append("Garden")
+            if st.checkbox("Children's Play Area", value=False, key="amenity_play"):
+                amenities.append("Play Area")
+        
+        with col4:
+            if st.checkbox("Club House", value=False, key="amenity_club"):
+                amenities.append("Club House")
+            if st.checkbox("Visitor Parking", value=False, key="amenity_visitor"):
+                amenities.append("Visitor Parking")
+            if st.checkbox("Maintenance Staff", value=True, key="amenity_maintenance"):
+                amenities.append("Maintenance Staff")
+            if st.checkbox("Waste Disposal", value=True, key="amenity_waste"):
+                amenities.append("Waste Disposal")
+        
+        st.divider()
+        
+        # Water Supply Section
+        st.markdown("#### 💧 Water Supply Details")
+        col_water1, col_water2 = st.columns(2)
+        
+        water_sources = []
+        with col_water1:
+            water_supply_type = st.multiselect(
+                "Water Supply Source *",
+                ["Corporation/Municipal", "Borewell/Tubewell", "Tanker", "Ground Water", 
+                 "Rain Water Harvesting", "Water Purifier Available"],
+                default=["Corporation/Municipal"],
+                help="Select all applicable water sources",
+                key="water_supply_type"
+            )
+            water_sources.extend(water_supply_type)
+        
+        with col_water2:
+            water_availability = st.selectbox(
+                "Water Availability",
+                ["24/7 Available", "Morning & Evening", "Once a Day", "Twice a Day", "As per Schedule"],
+                help="When is water available",
+                key="water_availability"
+            )
+            if water_availability != "24/7 Available":
+                amenities.append(f"Water: {water_availability}")
+            else:
+                amenities.append("24/7 Water Supply")
+        
+        # Add water sources to amenities
+        for source in water_sources:
+            if source not in ["Corporation/Municipal"]:  # Don't add common one
+                amenities.append(source)
+        
+        st.divider()
+        
+        st.markdown("#### 🏠 Property Features")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
             if st.checkbox("Balcony", value=True, key="feature_balcony"):
                 amenities.append("Balcony")
-        
-        with col3:
             if st.checkbox("Modular Kitchen", value=False, key="feature_kitchen"):
                 amenities.append("Modular Kitchen")
+            if st.checkbox("Wardrobe", value=False, key="feature_wardrobe"):
+                amenities.append("Wardrobe")
+        
+        with col2:
             if st.checkbox("AC", value=False, key="feature_ac"):
                 amenities.append("Air Conditioning")
             if st.checkbox("Geyser", value=False, key="feature_geyser"):
@@ -760,60 +1093,173 @@ def show_single_property_generator():
             if st.checkbox("WiFi/Internet", value=False, key="feature_wifi"):
                 amenities.append("Internet")
         
+        with col3:
+            if st.checkbox("TV", value=False, key="feature_tv"):
+                amenities.append("TV")
+            if st.checkbox("Washing Machine", value=False, key="feature_washing"):
+                amenities.append("Washing Machine")
+            if st.checkbox("Fridge", value=False, key="feature_fridge"):
+                amenities.append("Refrigerator")
+        
+        with col4:
+            if st.checkbox("Sofa", value=False, key="feature_sofa"):
+                amenities.append("Sofa")
+            if st.checkbox("Bed", value=False, key="feature_bed"):
+                amenities.append("Bed")
+            if st.checkbox("Dining Table", value=False, key="feature_dining"):
+                amenities.append("Dining Table")
+        
+        st.divider()
+        
+        st.markdown("#### 📍 Nearby Points of Interest")
+        col1, col2 = st.columns(2)
+        
+        nearby_points = []
+        
+        with col1:
+            if st.checkbox("Metro Station", value=False, key="nearby_metro"):
+                distance = st.text_input("Distance from Metro", placeholder="e.g., 500m", key="metro_dist")
+                nearby_points.append(f"Metro Station ({distance})" if distance else "Metro Station")
+            
+            if st.checkbox("Bus Stop", value=False, key="nearby_bus"):
+                distance = st.text_input("Distance from Bus Stop", placeholder="e.g., 200m", key="bus_dist")
+                nearby_points.append(f"Bus Stop ({distance})" if distance else "Bus Stop")
+            
+            if st.checkbox("Railway Station", value=False, key="nearby_railway"):
+                distance = st.text_input("Distance from Railway", placeholder="e.g., 2km", key="railway_dist")
+                nearby_points.append(f"Railway Station ({distance})" if distance else "Railway Station")
+            
+            if st.checkbox("Airport", value=False, key="nearby_airport"):
+                distance = st.text_input("Distance from Airport", placeholder="e.g., 15km", key="airport_dist")
+                nearby_points.append(f"Airport ({distance})" if distance else "Airport")
+        
+        with col2:
+            if st.checkbox("School", value=False, key="nearby_school"):
+                nearby_points.append("School Nearby")
+            
+            if st.checkbox("Hospital", value=False, key="nearby_hospital"):
+                nearby_points.append("Hospital Nearby")
+            
+            if st.checkbox("Market/Mall", value=False, key="nearby_market"):
+                nearby_points.append("Shopping Complex")
+            
+            if st.checkbox("Restaurant/Cafe", value=False, key="nearby_restaurant"):
+                nearby_points.append("Restaurants")
+        
         st.divider()
         
         st.markdown("#### 📄 Additional Description (Optional)")
+        st.info("💡 **Tip:** Add unique selling points here - corner flat, sea view, renovated recently, premium fittings, etc. This will be incorporated into the AI-generated description!")
         rough_description = st.text_area(
             "Owner's Description / Special Features",
-            placeholder="Add any additional details, special features, or unique selling points...",
-            height=100,
-            help="Free text to add any extra information about the property",
+            placeholder="Add any additional details, special features, or unique selling points...\n\nExamples:\n- Corner flat with cross ventilation\n- Recently renovated with Italian marble\n- Sea-facing balcony with sunset views\n- Vastu compliant\n- Premium society with celebrity residents",
+            height=150,
+            help="Free text to add any extra information about the property. This will be prominently featured in the generated description.",
             key="rough_desc"
         )
     
-    # Prepare property data
+    # Prepare property data for detailed form
     property_data = {
         'property_type': property_type.lower(),
         'bhk': bhk,
         'area_sqft': area_sqft,
+        'area_unit': area_unit,
+        'state': state,
+        'district': district,
         'city': city,
         'locality': locality,
+        'pincode': pincode if pincode else '',
         'landmark': landmark if landmark else '',
         'floor_no': floor_no,
         'total_floors': total_floors,
         'furnishing_status': furnishing.lower(),
         'rent_amount': rent,
         'deposit_amount': deposit,
+        'maintenance': maintenance,
+        'parking_charges': parking_charges,
+        'negotiable': negotiable,
         'available_from': str(available),
         'preferred_tenants': ', '.join(preferred_tenants),
         'amenities': amenities,
+        'water_supply': water_sources,
+        'water_availability': water_availability,
+        'nearby_points': nearby_points,
         'rough_description': rough_description if rough_description else ''
     }
     
-    # Generate buttons
-    col1, col2 = st.columns([1, 1])
+    # Generate button for detailed form
+    handle_generation_ui(property_data, api_provider, api_key)
+
+
+def handle_generation_ui(property_data, api_provider, api_key):
+    """Handle the generation UI and logic for both forms"""
+    st.divider()
     
-    with col1:
-        generate_clicked = st.button("🚀 Generate Description", type="primary", use_container_width=True)
+    # Show current variation style hint
+    if st.session_state.generation_count > 0:
+        variation_styles = [
+            "🌟 Lifestyle & Experience",
+            "💰 Investment & Value", 
+            "📍 Location & Connectivity",
+            "✨ Comfort & Luxury",
+            "👨‍👩‍👧 Community & Safety"
+        ]
+        next_style = variation_styles[(st.session_state.generation_count) % 5]
+        st.info(f"🔄 Next regeneration will use style: **{next_style}**")
     
-    with col2:
-        regenerate_clicked = st.button("🔄 Regenerate", type="secondary", use_container_width=True,
-                                      disabled=st.session_state.generated_result is None)
+    # Generate and Regenerate buttons
+    btn_col1, btn_col2, btn_col3 = st.columns([3, 1, 1])
+    
+    with btn_col1:
+        generate_clicked = st.button("🚀 Generate Premium Description", type="primary", use_container_width=True, key="generate_btn")
+    
+    with btn_col2:
+        regenerate_clicked = st.button("🔄 Regenerate", type="secondary", use_container_width=True, 
+                                      disabled=st.session_state.generated_result is None,
+                                      help="Generate a different version with same details",
+                                      key="regenerate_btn")
+    
+    with btn_col3:
+        clear_clicked = st.button("🗑️ Clear", type="secondary", use_container_width=True,
+                                 disabled=st.session_state.generated_result is None,
+                                 help="Clear generated results",
+                                 key="clear_btn")
+    
+    # Handle clear
+    if clear_clicked:
+        st.session_state.generated_result = None
+        st.session_state.generation_count = 0
+        st.session_state.enhanced_description = None
+        st.session_state.use_enhanced = False
+        st.session_state.enhanced_edit_mode = False
+        st.rerun()
     
     # Handle generation
     if generate_clicked or regenerate_clicked:
-        if not city or not locality:
+        if not property_data.get('city') or not property_data.get('locality'):
             st.error("❌ Please fill in all required fields marked with *")
             return
         
         st.session_state.property_data = property_data
+        st.session_state.enhanced_description = None  # Reset enhanced on new generation
+        st.session_state.use_enhanced = False
+        st.session_state.enhanced_edit_mode = False
         
         if regenerate_clicked:
             st.session_state.generation_count += 1
+            variation_styles = [
+                "🌟 Lifestyle & Experience",
+                "💰 Investment & Value", 
+                "📍 Location & Connectivity",
+                "✨ Comfort & Luxury",
+                "👨‍👩‍👧 Community & Safety"
+            ]
+            current_style = variation_styles[st.session_state.generation_count % 5]
+            st.info(f"🔄 Generating version #{st.session_state.generation_count + 1} with style: **{current_style}**")
         else:
             st.session_state.generation_count = 0
         
-        with st.spinner(f"✨ Generating premium description..."):
+        with st.spinner(f"✨ Generating premium description with {api_provider}..."):
             result = generate_description(
                 property_data, 
                 api_provider, 
@@ -825,82 +1271,350 @@ def show_single_property_generator():
             st.session_state.generated_result = result
             st.success("✅ Premium Description Generated Successfully!")
     
-    # Display results
+    # Display results if available
     if st.session_state.generated_result:
-        result = st.session_state.generated_result
-        property_data = st.session_state.property_data
+        display_generated_results()
+
+
+def display_generated_results():
+    """Display the generated results section"""
+    result = st.session_state.generated_result
+    property_data = st.session_state.property_data
+    
+    # Show version info with style
+    variation_styles = [
+        "🌟 Lifestyle & Experience",
+        "💰 Investment & Value", 
+        "📍 Location & Connectivity",
+        "✨ Comfort & Luxury",
+        "👨‍👩‍👧 Community & Safety"
+    ]
+    current_style = variation_styles[st.session_state.generation_count % 5]
+    
+    st.markdown("---")
+    
+    col_ver1, col_ver2 = st.columns([1, 3])
+    with col_ver1:
+        st.markdown(f"### 📝 Version #{st.session_state.generation_count + 1}")
+    with col_ver2:
+        st.markdown(f"**Style:** {current_style}")
+    
+    # Editable Title
+    st.markdown("### 🏠 Property Title")
+    edited_title = st.text_input(
+        "Title (Edit as needed)",
+        value=result['title'],
+        key="edit_title",
+        help="Click to edit the generated title"
+    )
+    
+    # Editable Teaser
+    edited_teaser = st.text_input(
+        "Teaser Line (Edit as needed)",
+        value=result['teaser_text'],
+        key="edit_teaser",
+        help="Click to edit the teaser text"
+    )
+    
+    st.divider()
+    
+    # Editable Full Description with Enhanced Version
+    st.markdown("### 📝 Full Description")
+    
+    desc_tab1, desc_tab2, desc_tab3 = st.tabs(["✏️ Edit Description", "🔄 AI Enhanced Version", "📊 Compare Versions"])
+    
+    with desc_tab1:
+        st.info("💡 **Tip:** Edit the description below as needed. Your changes will be saved in downloads.")
+        edited_description = st.text_area(
+            "Description (Edit as needed)",
+            value=result['full_description'],
+            height=250,
+            key="edit_description",
+            help="Click to edit the generated description"
+        )
+    
+    with desc_tab2:
+        st.markdown("#### 🚀 AI Enhanced Version")
+        st.caption("Click below to generate an enhanced, more detailed version of the description")
         
-        st.markdown("---")
-        st.header("🎉 Generated Property Description")
+        # Initialize enhanced description in session state
+        if 'enhanced_description' not in st.session_state:
+            st.session_state.enhanced_description = None
         
-        # Display generated content
-        col1, col2 = st.columns([2, 1])
+        col_enhance1, col_enhance2 = st.columns([1, 1])
         
-        with col1:
-            st.subheader("📝 Description")
-            st.markdown(f"**Title:** {result['title']}")
-            st.markdown(f"**Teaser:** {result['teaser_text']}")
-            st.markdown(f"**Full Description:** {result['full_description']}")
-            
-            st.subheader("✨ Key Features")
-            for point in result['bullet_points']:
-                st.markdown(f"• {point}")
-        
-        with col2:
-            st.subheader("🔍 SEO Optimization")
-            st.markdown("**Keywords:**")
-            st.write(", ".join(result['seo_keywords']))
-            
-            st.markdown("**Meta Title:**")
-            st.info(result['meta_title'])
-            
-            st.markdown("**Meta Description:**")
-            st.info(result['meta_description'])
-        
-        # Download options
-        st.divider()
-        st.subheader("💾 Download Options")
-        
-        download_col1, download_col2 = st.columns(2)
-        
-        with download_col1:
-            # JSON Download
-            json_data = json.dumps({
-                'property_details': property_data,
-                'generated_content': result,
-                'generation_version': st.session_state.generation_count + 1
-            }, indent=2)
-            
-            st.download_button(
-                "📄 Download JSON",
-                json_data,
-                f"property_{property_data['locality'].replace(' ', '_')}.json",
-                "application/json",
-                use_container_width=True
+        with col_enhance1:
+            enhance_style = st.selectbox(
+                "Enhancement Style",
+                ["More Detailed & Elaborate", "More Emotional & Persuasive", "More Professional & Formal", 
+                 "Add Local Flavor & Culture", "Focus on Investment Value", "Luxury & Premium Feel"],
+                key="enhance_style"
             )
         
-        with download_col2:
-            # Text Download
-            text_content = f"""{result['title']}
-{result['teaser_text']}
+        with col_enhance2:
+            enhance_length = st.selectbox(
+                "Target Length",
+                ["Medium (200-250 words)", "Long (300-350 words)", "Extra Long (400-500 words)"],
+                key="enhance_length"
+            )
+        
+        if st.button("✨ Generate Enhanced Version", type="primary", key="enhance_btn"):
+            if api_key:
+                with st.spinner("🚀 Enhancing description with AI..."):
+                    enhanced = generate_enhanced_description(
+                        original_desc=result['full_description'],
+                        property_data=property_data,
+                        style=enhance_style,
+                        length=enhance_length,
+                        api_key=api_key
+                    )
+                    if enhanced:
+                        st.session_state.enhanced_description = enhanced
+                        st.success("✅ Enhanced version generated!")
+            else:
+                st.error("❌ Please enter Groq API key in sidebar to use AI enhancement")
+        
+        # Display enhanced version if available
+        if st.session_state.enhanced_description:
+            st.markdown("---")
+            st.markdown("**Enhanced Description:**")
+            
+            # Initialize edit mode in session state
+            if 'enhanced_edit_mode' not in st.session_state:
+                st.session_state.enhanced_edit_mode = False
+            
+            # Show either view mode or edit mode
+            if st.session_state.enhanced_edit_mode:
+                # Edit Mode - Editable text area
+                st.info("✏️ **Edit Mode** - Make your changes below")
+                enhanced_edited = st.text_area(
+                    "Edit Enhanced Version",
+                    value=st.session_state.enhanced_description,
+                    height=300,
+                    key="enhanced_desc_edit"
+                )
+                
+                col_save, col_cancel = st.columns(2)
+                with col_save:
+                    if st.button("💾 Save Changes", type="primary", key="save_enhanced_edit"):
+                        st.session_state.enhanced_description = enhanced_edited
+                        st.session_state.enhanced_edit_mode = False
+                        st.rerun()
+                with col_cancel:
+                    if st.button("❌ Cancel", key="cancel_enhanced_edit"):
+                        st.session_state.enhanced_edit_mode = False
+                        st.rerun()
+            else:
+                # View Mode - Read only display
+                st.markdown(f"""
+                <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 4px solid #4CAF50;">
+                {st.session_state.enhanced_description}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                word_count = len(st.session_state.enhanced_description.split())
+                st.caption(f"📏 Word Count: {word_count}")
+                
+                # Action buttons
+                col_edit, col_use, col_regen = st.columns(3)
+                with col_edit:
+                    if st.button("✏️ Edit", key="edit_enhanced_btn"):
+                        st.session_state.enhanced_edit_mode = True
+                        st.rerun()
+                with col_use:
+                    use_enhanced = st.checkbox(
+                        "✅ Use in Downloads", 
+                        value=st.session_state.get('use_enhanced', False),
+                        key="use_enhanced_checkbox"
+                    )
+                    if use_enhanced:
+                        st.session_state.use_enhanced = True
+                    else:
+                        st.session_state.use_enhanced = False
+                with col_regen:
+                    if st.button("🔄 Regenerate", key="regenerate_enhanced"):
+                        st.session_state.enhanced_description = None
+                        st.session_state.enhanced_edit_mode = False
+                        st.rerun()
+        else:
+            st.info("👆 Click 'Generate Enhanced Version' to create an improved description")
+    
+    with desc_tab3:
+        st.markdown("#### 📊 Compare: Original vs Enhanced")
+        
+        compare_col1, compare_col2 = st.columns(2)
+        
+        with compare_col1:
+            st.markdown("**🔵 Original AI Generated:**")
+            st.text_area(
+                "Original",
+                value=result['full_description'],
+                height=250,
+                disabled=True,
+                key="compare_original",
+                label_visibility="collapsed"
+            )
+            word_count_orig = len(result['full_description'].split())
+            st.caption(f"📏 Word Count: {word_count_orig}")
+        
+        with compare_col2:
+            st.markdown("**🟢 Enhanced Version:**")
+            if st.session_state.enhanced_description:
+                st.text_area(
+                    "Enhanced",
+                    value=st.session_state.enhanced_description,
+                    height=250,
+                    disabled=True,
+                    key="compare_enhanced",
+                    label_visibility="collapsed"
+                )
+                word_count_enh = len(st.session_state.enhanced_description.split())
+                st.caption(f"📏 Word Count: {word_count_enh} ({word_count_enh - word_count_orig:+d} words)")
+            else:
+                st.info("Generate enhanced version first to compare")
+    
+    # Determine which description to use for downloads
+    use_enhanced_version = st.session_state.get('use_enhanced', False)
+    if use_enhanced_version and st.session_state.enhanced_description:
+        final_description = st.session_state.enhanced_description
+    else:
+        final_description = edited_description
+    
+    st.divider()
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### ✨ Key Features")
+        st.info("💡 Edit each feature below:")
+        edited_bullets = []
+        for i, point in enumerate(result['bullet_points'], 1):
+            edited_point = st.text_input(
+                f"Feature {i}",
+                value=point,
+                key=f"edit_bullet_{i}",
+                label_visibility="collapsed"
+            )
+            edited_bullets.append(edited_point)
+            st.markdown(f"**{i}.** {edited_point}")
+    
+    with col2:
+        st.markdown("### 🔍 SEO Keywords")
+        edited_keywords = st.text_input(
+            "Keywords (comma separated)",
+            value=", ".join(result['seo_keywords']),
+            key="edit_keywords"
+        )
+        edited_keywords_list = [k.strip() for k in edited_keywords.split(",")]
+        
+        st.markdown("### 📊 SEO Metadata")
+        edited_meta_title = st.text_input(
+            "Meta Title",
+            value=result['meta_title'],
+            key="edit_meta_title"
+        )
+        edited_meta_desc = st.text_area(
+            "Meta Description",
+            value=result['meta_description'],
+            height=100,
+            key="edit_meta_desc"
+        )
+    
+    # Store edited values for download
+    edited_result = {
+        'title': edited_title,
+        'teaser_text': edited_teaser,
+        'full_description': final_description,  # Uses enhanced version if selected
+        'bullet_points': edited_bullets,
+        'seo_keywords': edited_keywords_list,
+        'meta_title': edited_meta_title,
+        'meta_description': edited_meta_desc
+    }
+    
+    st.divider()
+    
+    # Download options
+    st.markdown("### 💾 Download Options")
+    st.success("✅ Downloads will include your edited content!")
+    
+    download_col1, download_col2, download_col3 = st.columns(3)
+    
+    with download_col1:
+        json_data = json.dumps({
+            'property_details': property_data,
+            'generated_content': edited_result,
+            'original_content': result,
+            'generation_version': st.session_state.generation_count + 1,
+            'style_used': current_style
+        }, indent=2)
+        st.download_button(
+            "📄 Download JSON",
+            json_data,
+            f"property_{property_data['locality'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}_v{st.session_state.generation_count + 1}.json",
+            "application/json",
+            use_container_width=True,
+            key="download_json"
+        )
+    
+    with download_col2:
+        text_content = f"""{edited_result['title']}
+{edited_result['teaser_text']}
 
-{result['full_description']}
+{edited_result['full_description']}
 
 Key Features:
-{chr(10).join(f"• {p}" for p in result['bullet_points'])}
+{chr(10).join(f"• {p}" for p in edited_result['bullet_points'])}
 
-SEO Keywords: {', '.join(result['seo_keywords'])}
-Meta Title: {result['meta_title']}
-Meta Description: {result['meta_description']}
-            """
-            
-            st.download_button(
-                "📝 Download TXT",
-                text_content,
-                f"property_{property_data['locality'].replace(' ', '_')}.txt",
-                "text/plain",
-                use_container_width=True
-            )
+SEO Keywords: {', '.join(edited_result['seo_keywords'])}
+Meta Title: {edited_result['meta_title']}
+Meta Description: {edited_result['meta_description']}
+
+---
+Property: {property_data['bhk']} {property_data['property_type'].title()}
+Location: {property_data['locality']}, {property_data['city']}
+Rent: ₹{property_data['rent_amount']:,}/month
+
+Version: #{st.session_state.generation_count + 1}
+Style: {current_style}
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+        """
+        st.download_button(
+            "📝 Download TXT",
+            text_content,
+            f"property_{property_data['locality'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}_v{st.session_state.generation_count + 1}.txt",
+            "text/plain",
+            use_container_width=True,
+            key="download_txt"
+        )
+    
+    with download_col3:
+        csv_data = pd.DataFrame([{
+            'Property_Type': property_data['property_type'],
+            'BHK': property_data['bhk'],
+            'Area': f"{property_data['area_sqft']} {property_data['area_unit']}",
+            'Location': f"{property_data['locality']}, {property_data['city']}, {property_data.get('district', '')}, {property_data.get('state', '')}",
+            'Pincode': property_data.get('pincode', ''),
+            'Rent': property_data['rent_amount'],
+            'Title': edited_result['title'],
+            'Teaser': edited_result['teaser_text'],
+            'Description': edited_result['full_description'],
+            'Features': ' | '.join(edited_result['bullet_points']),
+            'SEO_Keywords': ', '.join(edited_result['seo_keywords']),
+            'Meta_Title': edited_result['meta_title'],
+            'Meta_Description': edited_result['meta_description'],
+            'Version': st.session_state.generation_count + 1,
+            'Style': current_style
+        }])
+        
+        st.download_button(
+            "📊 Download CSV",
+            csv_data.to_csv(index=False),
+            f"property_{property_data['locality'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}_v{st.session_state.generation_count + 1}.csv",
+            "text/csv",
+            use_container_width=True,
+            key="download_csv"
+        )
+
 
 if __name__ == "__main__":
     main()
