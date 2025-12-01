@@ -194,9 +194,24 @@ Surroundings: {surroundings if surroundings else 'Not specified'}
 Amenities: {amenities if amenities else 'Not specified'}
 Legal Status: {legal_status}
 Additional Information: {additional_info if additional_info else 'None'}
-SEO Keywords to include: {seo_keywords if seo_keywords else 'None'}
 
-Write a compelling description that highlights the key features, location advantages, and investment potential. Naturally incorporate the SEO keywords throughout the description for better search engine optimization. Keep it professional, engaging, and around 150-200 words. Make sure the keywords flow naturally in the text."""
+Write a compelling description that highlights the key features, location advantages, and investment potential. Keep it professional, engaging, and around 150-200 words.
+
+{f'''
+After the main description, add a section with SEO keywords in bullet points:
+
+SEO Keywords to include as bullets:
+{seo_keywords}
+
+Format the output as:
+[Main Description Paragraph]
+
+**Key Features:**
+- [keyword 1]
+- [keyword 2]
+- [keyword 3]
+etc.
+''' if seo_keywords else ''}"""
 
         with st.spinner("Generating description..."):
             try:
