@@ -670,8 +670,7 @@ def show_basic_details_form(api_provider, api_key):
     with col1:
         property_type = st.selectbox(
             "Property Type *",
-            ["Flat", "Villa", "Independent House", "PG/Hostel", "Shop", "Office Space", 
-             "Warehouse", "Land/Plot", "Studio Apartment", "Penthouse", "Plot", "Agricultural Land", 
+            [ "Plot", "Agricultural Land", 
              "Residential", "Commercial", "Industrial", "Institutional"],
             help="Select the type of property",
             key="basic_prop_type"
@@ -698,7 +697,7 @@ def show_basic_details_form(api_provider, api_key):
         
         furnishing = st.selectbox(
             "Furnishing Status *",
-            ["Unfurnished", "Semi-Furnished", "Fully Furnished"],
+            ["Unfurnished", "Semi-Furnished", "Fully Furnished", "land"],
             help="Current furnishing level of the property",
             key="basic_furnishing"
         )
@@ -742,7 +741,7 @@ def show_basic_details_form(api_provider, api_key):
     
     with col_price1:
         rent = st.number_input(
-            "Monthly Rent (₹) *",
+            " Price  (₹) *",
             min_value=1000,
             max_value=10000000000,
             value=30000,
@@ -797,7 +796,7 @@ def show_basic_details_form(api_provider, api_key):
         'locality': locality,
         'landmark': landmark if landmark else '',
         'furnishing_status': furnishing.lower(),
-        'rent_amount': rent,
+        'rent_amount': Price,
         'deposit_amount': deposit,
         'available_from': str(available),
         'preferred_tenants': ', '.join(preferred_tenants),
