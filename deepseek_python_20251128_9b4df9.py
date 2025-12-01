@@ -796,7 +796,7 @@ def show_basic_details_form(api_provider, api_key):
         'locality': locality,
         'landmark': landmark if landmark else '',
         'furnishing_status': furnishing.lower(),
-        'rent_amount': Price,
+        'rent_amount': rent,
         'deposit_amount': deposit,
         'available_from': str(available),
         'preferred_tenants': ', '.join(preferred_tenants),
